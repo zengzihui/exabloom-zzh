@@ -1,33 +1,54 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+// import { ReactFlow } from '@xyflow/react';
+ 
+// import '@xyflow/react/dist/style.css';
+ 
+// const initialNodes = [
+//   { id: '1', position: { x: 0, y: 0 }, data: { label: '1' } },
+//   { id: '2', position: { x: 0, y: 100 }, data: { label: '2' } },
+// ];
+// const initialEdges = [{ id: 'e1-2', source: '1', target: '2' }];
+ 
+// export default function App() {
+//   return (
+//     <div style={{ width: '100vw', height: '100vh' }}>
+//       <h1>hello</h1>
+//       <ReactFlow nodes={initialNodes} edges={initialEdges} />
+//     </div>
+//   );
+// }
+
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './styles/App.css'
+import Header from './components/Header';
+import Level1Page from './pages/Level1Page';
+import Level2Page from './pages/Level2Page';
+import Level3Page from './pages/Level3Page';
+
 
 function App() {
-  const [count, setCount] = useState(0)
+  
 
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1 className='text-blue-400'>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <Router>
+        <div className='flex flex-col w-screen h-screen'>
+          <div>
+            <Header />
+          </div>
+          
+          <div className='h-full'>
+            <Routes>
+              <Route path="/level1" element={<Level1Page />} />
+              <Route path="/level2" element={<Level2Page />} />
+              <Route path="/level3" element={<Level3Page />} />
+            </Routes>
+          </div>
+        </div>
+        
+       
+      </Router>
+  
+      
     </>
   )
 }
