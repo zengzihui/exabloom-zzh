@@ -23,6 +23,7 @@ import Header from './components/Header';
 import Level1Page from './pages/Level1Page';
 import Level2Page from './pages/Level2Page';
 import Level3Page from './pages/Level3Page';
+import { ReactFlowProvider } from '@xyflow/react';
 
 
 function App() {
@@ -37,11 +38,14 @@ function App() {
           </div>
           
           <div className='h-full'>
-            <Routes>
-              <Route path="/level1" element={<Level1Page />} />
-              <Route path="/level2" element={<Level2Page />} />
-              <Route path="/level3" element={<Level3Page />} />
-            </Routes>
+            <ReactFlowProvider>
+              <Routes>
+                <Route path="/level1" element={<Level1Page />} />
+                <Route path="/level2" element={<Level2Page />} />
+                <Route path="/level3" element={<Level3Page />} />
+              </Routes>
+            </ReactFlowProvider>
+           
           </div>
         </div>
         
