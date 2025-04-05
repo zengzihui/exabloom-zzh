@@ -19,7 +19,7 @@ function EndNode({
 // const EndNode = memo(({ data, selected }: NodeProps<EndNodeData>) => {
   return (
     <div 
-        className={`flex items-center justify-center gap-2 border bg-gray-200 text-gray-500 text-xs font-semibold rounded-full border-gray-200 w-56 h-14 p-3 shadow-sm ${
+        className={`flex items-center justify-center gap-2 border bg-gray-200 text-gray-500 text-xs font-semibold rounded-full border-gray-200 w-56 h-14 p-3 ${
             selected ? 'border-gray-800' : 'border-gray-400' 
         } `}
     >
