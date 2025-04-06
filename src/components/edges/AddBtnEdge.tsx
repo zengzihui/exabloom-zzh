@@ -1,18 +1,12 @@
 import React, { memo } from 'react';
 import {
-    addEdge,
     BaseEdge,
     EdgeLabelRenderer,
     getSmoothStepPath,
     useReactFlow,
     type EdgeProps,
 } from '@xyflow/react';
-import type { CustomNodeType, CustomEdgeType } from '../../types/flowTypes';
-
-
-interface AddBtnEdgeProps extends EdgeProps {
-    getId: () => string;
-}
+import { getId } from '../../utils/flowUtils';
 
 function AddBtnEdge({
     id,
@@ -25,12 +19,11 @@ function AddBtnEdge({
     sourcePosition,
     targetPosition,
     style = {},
-    markerEnd,
-    data,    
-}: AddBtnEdgeProps) {
+    markerEnd, 
+}: EdgeProps) {
 
 
-const { setEdges, setNodes, getNodes, getEdges, screenToFlowPosition } = useReactFlow();
+const { setEdges, setNodes, getNodes } = useReactFlow();
 
 const [edgePath, labelX, labelY] = getSmoothStepPath({
     sourceX,
@@ -43,15 +36,6 @@ const [edgePath, labelX, labelY] = getSmoothStepPath({
 
 
 const onEdgeClick = async () => {
-    if (!data?.getId) {
-        console.error('getId function is not provided in edge data');
-        return;
-    }
-    if (!data?.incrementLayoutVersion) {
-        console.error('incrementLayoutVersion function is not provided in edge data');
-        return;
-    }
-
     // Get source and target nodes to determine correct positioning
     const sourceNode = getNodes().find(n => n.id === source);
     const targetNode = getNodes().find(n => n.id === target);
@@ -59,10 +43,11 @@ const onEdgeClick = async () => {
     if (!sourceNode || !targetNode) return;
 
     // Generate a new unique id for the new node
-    const newNodeId: string = data.getId();
+    const newNodeId: string = getId();
+
     console.log("getId() = ", newNodeId);
 
-
+    // Create new node
     const newNode = {
         id: newNodeId,
         type: 'action',
@@ -83,21 +68,18 @@ const onEdgeClick = async () => {
         source: source,
         target: newNodeId,
         type: 'addButton',
-        data: { getId: data.getId, incrementLayoutVersion:data.incrementLayoutVersion },
     };
     const newEdge2 = {
         id: `e${newNodeId}-${target}`,
         source: newNodeId,
         target: target,
         type: 'addButton',
-        data: { getId: data.getId, incrementLayoutVersion: data.incrementLayoutVersion },
     };
 
     // Add the new action node
     setNodes((nds) => {
         const updatedNodes = nds.concat(newNode);
         console.log('Updated Nodes: ', updatedNodes);
-        data.incrementLayoutVersion();
         return updatedNodes;
     });
     
@@ -110,9 +92,6 @@ const onEdgeClick = async () => {
         console.log('Updated Edges:', updatedEdges);
         return updatedEdges;
     });
-
-    
-
 };
 
 

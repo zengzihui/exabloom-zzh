@@ -1,2 +1,33 @@
-export type CustomNodeType = 'start' | 'end' | 'action' | 'if-else';
-export type CustomEdgeType = 'addButton' | 'default';
+// export type CustomNodeType = 'start' | 'end' | 'action' | 'if-else';
+// export type CustomEdgeType = 'addButton' | 'default';
+
+import { Node } from "@xyflow/react";
+
+export interface FlowNode extends Node {
+    data: {
+        title?: string;
+        text?: string;
+        label?: string;
+    }
+}
+
+// export interface FlowEdge extends Edge {
+//     data: {
+//         getId: () => string;
+//     }
+// }
+
+export interface FlowFormData {
+    text: string;
+}
+  
+export interface FormValues {
+    text: string;
+}
+
+export interface SelectedNode {
+    data: {
+        text?: string;
+        title?: string;
+    };
+}
