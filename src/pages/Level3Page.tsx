@@ -16,7 +16,7 @@ import '@xyflow/react/dist/style.css';
 import '../styles/xy-theme.css';
 import { useForm } from 'react-hook-form';
 import ActionNodeForm from '../components/forms/ActionNodeForm';
-import { getLayoutedElements, createNewEdge } from '../utils/flowUtils';
+import { getLayoutedElements, createNewEdge, getId } from '../utils/flowUtils';
 import { nodeTypes, edgeTypes, initialNodes, initialEdges } from '../constants/flowConstants';
 import IfElseNodeForm from '../components/forms/IfElseNodeForm';
 
@@ -33,37 +33,22 @@ const Level3Page = () => {
     const [elseNode, setElseNode] = useState(null);
     const [showActionForm, setShowActionForm] = useState(false);
     const [showIfElseForm, setShowIfElseForm] = useState(false);
-
-    
-    const { register, handleSubmit, reset } = useForm();
-
   
+    const { register, handleSubmit, reset } = useForm();
      
     const handleNodeClick = (event, node) => {
         // Only show the form if the clicked node is of type 'action'
         if (node.type === 'action') {
             setSelectedNode(node);
-            // Set form default values from node data
-            reset({
-                text: node.data.text || ''
-            });
             setShowActionForm(true);
         } else if (node.type === 'ifElse') {
             const childNodes = getOutgoers(node, nodes, edges);
             const branchNodes = childNodes.filter((child) => child.type === 'branch');
             const elseNode = childNodes.find((child) => child.type === 'else');
-            
-            reset({
-                ifElseText: node.data.text || '',
-                branchesTitle: branchNodes.map(branch => ({ id: branch.id, title: branch.data.title })),
-                elseTitle: elseNode?.title || '',
-            });
-
             setSelectedNode(node);
             setBranchNodes(branchNodes);
             setElseNode(elseNode);
             setShowIfElseForm(true);
-            
         }
     };
 
@@ -97,7 +82,7 @@ const Level3Page = () => {
                         ...node,
                         data: {
                             ...node.data,
-                            text: data.ifText,
+                            text: data.ifElseText,
                         },
                     };
                 }
@@ -144,16 +129,17 @@ const Level3Page = () => {
 
     // Handle adding a new branch node
     const handleAddBranch = () => {
-        const newBranchId = `branch-${Date.now()}`;
+        const branchCount = branchNodes.length + 1;
+        const newBranchId = getId();
         const newBranchNode = {
             id: newBranchId,
             type: 'branch',
             position: {
-                x: selectedNode.position.x + 200, // Position it near the IfElseNode
-                y: selectedNode.position.y + 100,
+                x: 0, // Position it near the IfElseNode
+                y: 0,
             },
             data: {
-                title: `New Branch`,
+                title: `Branch #${branchCount}`,
             },
         };
         // Add the new branch node and connect it to the IfElseNode
@@ -171,8 +157,6 @@ const Level3Page = () => {
         // Update the branchNodes state
         setBranchNodes((branches) => [...branches, newBranchNode]);
     };
-
-
 
 
 

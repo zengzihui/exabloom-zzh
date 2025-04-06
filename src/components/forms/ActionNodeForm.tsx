@@ -37,7 +37,7 @@ const ActionNodeForm: React.FC<ActionNodeFormProps> = ({
               className="text-lg font-medium text-gray-800 truncate w-full text-left"
               title={selectedNode?.data?.title}
             >
-              {selectedNode?.data?.title || 'Action Node'}
+              Update Action Node
             </h3>
             <p 
               className='truncate w-full text-left text-md text-gray-800' 
@@ -55,7 +55,7 @@ const ActionNodeForm: React.FC<ActionNodeFormProps> = ({
           </button>
         </div>
         
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pt-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pt-4 h-full flex flex-col justify-between">
           <div className='flex flex-col items-start'>
             <label htmlFor="text" className="text-md font-medium text-gray-800 mb-2">
               Action Name

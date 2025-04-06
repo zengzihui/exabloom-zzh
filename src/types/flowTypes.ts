@@ -36,6 +36,6 @@ export interface SelectedNode {
 
 export interface IfElseFormValues {
     ifElseText: string;
-    branchesTitle: { id: string; title: string }[];
+    branches: { id: string; title: string }[];
     elseTitle: string;
 }
