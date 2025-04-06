@@ -6,7 +6,7 @@ interface RoundedBaseNodeData {
     id: string;
     position: { x: number; y: number };
     data: {
-        label?: string;
+        title?: string;
         [key: string]: unknown;
     };
 }
@@ -27,7 +27,7 @@ function RoundedBaseNode({
             selected ? 'border-gray-800' : 'border-gray-400' 
         } `}
     >
-        {data.label && <p className="">{data.label}</p>}
+        {data.title && <p className="">{data.title}</p>}
 
         {isSourceEnabled && (
             <Handle

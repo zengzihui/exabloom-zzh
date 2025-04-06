@@ -63,9 +63,7 @@ const Level3Page = () => {
         );
         
         setShowForm(false);
-    };
-
-    
+    };   
 
     const handleActionNodeDelete = useCallback(() => {
         const confirmed = window.confirm("Are you sure you want to delete this node?");
@@ -113,7 +111,7 @@ const Level3Page = () => {
 
     useEffect(() => {
         if (nodes.length === 0) return;
-        const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(nodes, edges);
+        const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(nodes, edges, '1');
         setNodes([...layoutedNodes]);
         setEdges([...layoutedEdges]);
       }, [nodes.length, edges.length]);
@@ -131,6 +129,7 @@ const Level3Page = () => {
                 onEdgesChange={onEdgesChange}
                 onConnect={onConnect}
                 onNodeClick={handleActionNodeClick}
+                deleteKeyCode={[]} // Disable default deletion behaviour
             >
                 <Controls />
                 <MiniMap />

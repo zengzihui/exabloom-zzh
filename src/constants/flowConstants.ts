@@ -5,11 +5,15 @@ import ActionNode from '../components/nodes/ActionNode';
 import { FlowNode } from "../types/flowTypes";
 import { EdgeTypes, NodeTypes } from "@xyflow/react";
 import { Edge } from "@xyflow/react";
+import IfElseNode from "../components/nodes/IfElseNode";
+import BranchNode from "../components/nodes/BranchNode";
 
 export const nodeTypes: NodeTypes = {
   start: StartNode,
   end: EndNode,
   action: ActionNode,
+  ifElse: IfElseNode,
+  branch: BranchNode,
 };
 
 export const edgeTypes: EdgeTypes = {
@@ -33,7 +37,7 @@ export const initialNodes: FlowNode[] = [
     position: { x:0, y:0 },
     selected: false,
     data: { 
-      label: "END" 
+      title: "END" 
     },
   },
   
