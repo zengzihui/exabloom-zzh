@@ -40,6 +40,7 @@ function App() {
           <div className='h-full'>
             <ReactFlowProvider>
               <Routes>
+                <Route path="/" element={<Level3Page />} />
                 <Route path="/level1" element={<Level1Page />} />
                 <Route path="/level2" element={<Level2Page />} />
                 <Route path="/level3" element={<Level3Page />} />
