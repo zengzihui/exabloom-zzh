@@ -15,18 +15,18 @@ interface AddBtnEdgeProps extends EdgeProps {
 }
 
 function AddBtnEdge({
-id,
-source, 
-target,
-sourceX,
-sourceY,
-targetX,
-targetY,
-sourcePosition,
-targetPosition,
-style = {},
-markerEnd,
-data,    
+    id,
+    source, 
+    target,
+    sourceX,
+    sourceY,
+    targetX,
+    targetY,
+    sourcePosition,
+    targetPosition,
+    style = {},
+    markerEnd,
+    data,    
 }: AddBtnEdgeProps) {
 
 
@@ -68,7 +68,7 @@ const onEdgeClick = async () => {
         },
         selected: false,
         data: { 
-            title: `Node ${newNodeId}`,
+            title: "Action Node",
             text: '',
         },
     };
@@ -118,7 +118,7 @@ return (
         style={{ left: `${labelX}px`, top: `${labelY}px` }}
     >
         <button
-            className="text-gray-400 hover:text-gray-900"
+            className="text-gray-400 bg-white hover:text-gray-900"
             onClick={onEdgeClick}
         >
             +

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useLayoutEffect, useEffect } from 'react';
+import React, { useState, useRef, useCallback, useLayoutEffect, useEffect, Fragment } from 'react';
 import { 
     Background, 
     Controls, 
@@ -13,16 +13,16 @@ import {
     useNodesState, 
     useReactFlow 
 } from "@xyflow/react";
-import ELK from 'elkjs/lib/elk.bundled.js';
 import '@xyflow/react/dist/style.css';
 import '../styles/xy-theme.css';
 import StartNode from "../components/nodes/StartNode";
 import EndNode from "../components/nodes/EndNode";
 import AddBtnEdge from "../components/edges/AddBtnEdge";
-import { CustomNodeType } from '../types/flowTypes';
 import ActionNode from '../components/nodes/ActionNode';
+import NodeEditorSidebar from '../components/NodeEditorSidebar';
 import dagre from '@dagrejs/dagre';
-
+import { useForm } from 'react-hook-form';
+import { RxCross2 } from "react-icons/rx";
 
 const nodeTypes: NodeTypes = {
     start: StartNode,
@@ -54,27 +54,27 @@ const initialNodes: Node[] = [
             label: "END" 
         },
     },
-    {
-        id: '4', type: 'action', position: { x:0, y:0 }, selected: false,        
-        data: { 
-            title: "Node 4",
-            text: '',
-        },
-    },
-    {
-        id: '5', type: 'action', position: { x:0, y:0 }, selected: false,        
-        data: { 
-            title: "Node 5",
-            text: '',
-        },
-    },
-    {
-        id: '6', type: 'action', position: { x:0, y:0 }, selected: false,        
-        data: { 
-            title: "Node 6",
-            text: '',
-        },
-    },
+    // {
+    //     id: '4', type: 'action', position: { x:0, y:0 }, selected: false,        
+    //     data: { 
+    //         title: "Node 4",
+    //         text: '',
+    //     },
+    // },
+    // {
+    //     id: '5', type: 'action', position: { x:0, y:0 }, selected: false,        
+    //     data: { 
+    //         title: "Node 5",
+    //         text: '',
+    //     },
+    // },
+    // {
+    //     id: '6', type: 'action', position: { x:0, y:0 }, selected: false,        
+    //     data: { 
+    //         title: "Action Node",
+    //         text: '',
+    //     },
+    // },
    
 ];
 
@@ -236,19 +236,56 @@ const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
   initialEdges,
 );
  
+const onNodeClick = (event, node) => console.log('click node', node);
 
 const Level2Page = () => {
     const reactFlowWrapper = useRef(null);
 
     const [nodes, setNodes, onNodesChange] = useNodesState(layoutedNodes);
     const [edges, setEdges, onEdgesChange] = useEdgesState(layoutedEdges);
-    
+    const [selectedNode, setSelectedNode] = useState(null);
+    const [showForm, setShowForm] = useState(false);
+
+    const { register, handleSubmit, reset } = useForm();
+
+    const handleActionNodeClick = (event, node) => {
+        // Only show the form if the clicked node is of type 'action'
+        console.log(`node's type is ${node.type}`);
+        if (node.type === 'action') {
+            console.log(`nodeId is ${node.id}`);
+            console.log(`node data is ${node.data.text}`);
+            setSelectedNode(node);
+            // Set form default values from node data
+            reset({
+                text: node.data.text || ''
+            });
+            setShowForm(true);
+        }
+    };
+    const onSubmit = (data) => {
+        // Update the node data
+        setNodes(nds => 
+          nds.map(node => {
+            if (node.id === selectedNode.id) {
+              return {
+                ...node,
+                data: {
+                  ...node.data,
+                  text: data.text
+                }
+              };
+            }
+            return node;
+          })
+        );
+        
+        setShowForm(false);
+      };
 
     const onConnect = useCallback(
         (params) => setEdges((eds) => addEdge(params, eds)),
         [setEdges],
     );
-
 
     useEffect(() => {
         if (nodes.length === 0) return;
@@ -271,12 +308,80 @@ const Level2Page = () => {
                 onNodesChange={onNodesChange}
                 onEdgesChange={onEdgesChange}
                 onConnect={onConnect}
+                onNodeClick={handleActionNodeClick}
             >
                 <Controls />
                 <MiniMap />
                 <Background variant="dots" gap={12} size={1} />
             </ReactFlow>
+          
+        
+             {/* Simple Overlay Form */}
+      {showForm && (
+        <div className="absolute inset-0 z-10" style={{ backgroundColor: 'rgba(0, 0, 0, 0.65)'}}>
+          <div className="absolute top-0 right-0 bottom-0 w-[600px] p-8 bg-white shadow-xl flex flex-col h-full">
+            <div className="flex gap-4 justify-between border-b border-gray-200 py-2 my-2">
+                <div className='flex flex-col items-start w-full min-w-0'>
+                    <h3 
+                        className="text-lg font-medium text-gray-800 truncate w-full text-left"
+                        title={selectedNode?.data?.title}
+                    >
+                        {selectedNode?.data?.title || 'Action Node'}
+                    </h3>
+                    <p 
+                        className='truncate w-full text-left text-md text-gray-800' 
+                        title={selectedNode?.data?.text}
+                    >
+                        {selectedNode?.data?.text || 'Untitled Node' }
+                    </p>
+                </div>
+              
+                <button 
+                    onClick={() => setShowForm(false)}
+                    className="text-gray-400 hover:text-gray-700 focus:outline-none"
+                >
+                    <RxCross2 className='text-2xl'/>
+                </button>
+            </div>
             
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pt-4">
+              <div className='flex flex-col items-start'>
+                <label htmlFor="text" className="text-md font-medium text-gray-800 mb-2">
+                  Action Name
+                </label>
+                <input
+                    type='text'
+                    {...register('text')}
+                    id='text'
+                    className='w-full border border-gray-300 rounded-md px-2 py-1
+                    focus:shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 '
+                    placeholder='Enter new name for this action node here...'    
+                >
+                </input>
+                
+              </div>
+              
+              <div className="flex justify-end space-x-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowForm(false)}
+                  className="px-4 py-2 bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 rounded-md shadow-sm text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 text-white bg-blue-600 hover:bg-blue-800 rounded-md shadow-sm text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  Save
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+        
         
         </div>
     )
