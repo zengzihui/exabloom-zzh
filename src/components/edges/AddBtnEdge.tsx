@@ -9,6 +9,7 @@ import {
     type EdgeProps,
 } from '@xyflow/react';
 import { getId } from '../../utils/flowUtils';
+import { useAffectedNode } from '../../stores/store';
 
 function AddBtnEdge({
     id,
@@ -26,6 +27,7 @@ function AddBtnEdge({
 
 
 const { setEdges, setNodes, getNodes } = useReactFlow();
+const { affectedNodeId, setAffectedNodeId } = useAffectedNode();
 
 const [edgePath, labelX, labelY] = getSmoothStepPath({
     sourceX,
@@ -181,6 +183,8 @@ const handleNodeCreation = (nodeType: string) => {
         return updatedEdges;
     });
 
+    console.log(`newNode id = ${newNodeId} `);
+    setAffectedNodeId(newNodeId);
     setShowSelections(false);
 };
 

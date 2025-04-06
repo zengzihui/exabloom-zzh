@@ -14,28 +14,30 @@ import {
 } from "@xyflow/react";
 import '@xyflow/react/dist/style.css';
 import '../styles/xy-theme.css';
-import { useForm } from 'react-hook-form';
 import ActionNodeForm from '../components/forms/ActionNodeForm';
-import { getLayoutedElements, createNewEdge, getId } from '../utils/flowUtils';
+import {  createNewEdge, getId, getLayoutedElements } from '../utils/flowUtils';
 import { nodeTypes, edgeTypes, initialNodes, initialEdges } from '../constants/flowConstants';
 import IfElseNodeForm from '../components/forms/IfElseNodeForm';
+import { useAffectedNode } from '../stores/store';
 
 
-const Level3Page = () => { 
+const FlowPage = () => { 
     const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
         initialNodes,
-        initialEdges,
+        initialEdges
     );
     const [nodes, setNodes, onNodesChange] = useNodesState(layoutedNodes);
     const [edges, setEdges, onEdgesChange] = useEdgesState(layoutedEdges);
+   
+
     const [selectedNode, setSelectedNode] = useState(null);
     const [branchNodes, setBranchNodes] = useState(null);
     const [elseNode, setElseNode] = useState(null);
     const [showActionForm, setShowActionForm] = useState(false);
     const [showIfElseForm, setShowIfElseForm] = useState(false);
+    const { affectedNodeId, setAffectedNodeId } = useAffectedNode();
   
-    const { register, handleSubmit, reset } = useForm();
-     
+
     const handleNodeClick = (event, node) => {
         // Only show the form if the clicked node is of type 'action'
         if (node.type === 'action') {
@@ -131,6 +133,8 @@ const Level3Page = () => {
     const handleAddBranch = () => {
         const branchCount = branchNodes.length + 1;
         const newBranchId = getId();
+
+      
         const newBranchNode = {
             id: newBranchId,
             type: 'branch',
@@ -153,7 +157,9 @@ const Level3Page = () => {
                 type: 'smoothstep',
             },
         ]);
-
+        
+        
+        setAffectedNodeId(selectedNode.id);
         // Update the branchNodes state
         setBranchNodes((branches) => [...branches, newBranchNode]);
     };
@@ -193,6 +199,8 @@ const Level3Page = () => {
                 const updatedNodes = nds.filter(node => node.id !== selectedNode.id);
                 return updatedNodes;
             });
+
+            setAffectedNodeId(selectedNode.id);
 
             setShowActionForm(false);
         }
@@ -247,8 +255,14 @@ const Level3Page = () => {
 
             setEdges([...filteredEdges, ...newEdges]);
             setNodes([...filteredNodes, newEndNode]);
+            setAffectedNodeId(selectedNode.id);
 
             setShowIfElseForm(false);
+            // // After deletion, relayout the parent branch if needed
+            // if (parentNodes.length > 0) {
+            //     const parentId = parentNodes[0].id;
+            //     setNodes(prev => getLayoutedBranch(prev, filteredEdges, parentId));
+            // }
         }
     }, [selectedNode, nodes, edges, setEdges, setNodes]);
     
@@ -260,14 +274,21 @@ const Level3Page = () => {
 
     useEffect(() => {
         if (nodes.length === 0) return;
-        const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(nodes, edges, '1');
-        setNodes([...layoutedNodes]);
-        setEdges([...layoutedEdges]);
+        
+            const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(nodes, edges);
+            setNodes([...layoutedNodes]);
+            setEdges([...layoutedEdges]);
+            setAffectedNodeId(null);
+        
+     
       }, [nodes.length, edges.length]);
-    
+  
+
+ 
 
     return (
         <div className="w-full h-full">
+         
             <ReactFlow 
                 nodes={nodes} 
                 edges={edges} 
@@ -279,6 +300,7 @@ const Level3Page = () => {
                 onConnect={onConnect}
                 onNodeClick={handleNodeClick}
                 deleteKeyCode={[]} // Disable default deletion behaviour
+                nodesDraggable={false}  // Disable dragging 
             >
                 <Controls />
                 <MiniMap />
@@ -310,5 +332,5 @@ const Level3Page = () => {
     )
 }
 
-export default Level3Page;
+export default FlowPage;
 
