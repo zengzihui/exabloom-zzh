@@ -19,7 +19,7 @@ function StartNode({
 }: NodeProps<StartNodeData>) {
   return (
     <div 
-        className={`flex items-center gap-2 border bg-white rounded w-56 h-14 p-3 shadow-sm ${
+        className={`flex items-center gap-2 border bg-white rounded w-56 h-14 p-3 ${
             selected ? 'border-emerald-400' : 'border-gray-200' 
         } `}
     >

@@ -40,7 +40,7 @@ const nodes = [
 
 const edges = [
     {
-        id: 'e1-2', source: '1', target: '2', label: '+'
+        id: 'e1-2', source: '1', target: '2', type: 'addButton'
     }
 ];
 
