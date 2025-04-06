@@ -47,6 +47,10 @@ const onEdgeClick = async () => {
         console.error('getId function is not provided in edge data');
         return;
     }
+    if (!data?.incrementLayoutVersion) {
+        console.error('incrementLayoutVersion function is not provided in edge data');
+        return;
+    }
 
     // Get source and target nodes to determine correct positioning
     const sourceNode = getNodes().find(n => n.id === source);
@@ -79,20 +83,21 @@ const onEdgeClick = async () => {
         source: source,
         target: newNodeId,
         type: 'addButton',
-        data: { getId: data.getId },
+        data: { getId: data.getId, incrementLayoutVersion:data.incrementLayoutVersion },
     };
     const newEdge2 = {
         id: `e${newNodeId}-${target}`,
         source: newNodeId,
         target: target,
         type: 'addButton',
-        data: { getId: data.getId },
+        data: { getId: data.getId, incrementLayoutVersion: data.incrementLayoutVersion },
     };
 
     // Add the new action node
     setNodes((nds) => {
         const updatedNodes = nds.concat(newNode);
         console.log('Updated Nodes: ', updatedNodes);
+        data.incrementLayoutVersion();
         return updatedNodes;
     });
     
@@ -105,6 +110,8 @@ const onEdgeClick = async () => {
         console.log('Updated Edges:', updatedEdges);
         return updatedEdges;
     });
+
+    
 
 };
 
