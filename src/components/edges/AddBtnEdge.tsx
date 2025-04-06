@@ -76,8 +76,8 @@ const handleNodeCreation = (nodeType: string) => {
             id: branchNodeId,
             type: 'branch',
             position: { 
-                x: newNode.position.x - 150, // Position to the left of IfElse Node
-                y: newNode.position.y + 100,
+                x: 0, 
+                y: 0,
             },
             selected: false,
             data: { 
@@ -89,10 +89,10 @@ const handleNodeCreation = (nodeType: string) => {
         const elseNodeId = getId();
         const elseNode = {
             id: elseNodeId,
-            type: 'branch',
+            type: 'else',
             position: { 
-                x: newNode.position.x + 150, // Position to the right of IfElse Node
-                y: newNode.position.y + 100,
+                x: 0,
+                y: 0,
             },
             selected: false,
             data: { 
@@ -106,8 +106,8 @@ const handleNodeCreation = (nodeType: string) => {
             id: endNodeId,
             type: 'end',
             position: { 
-                x: newNode.position.x + 150, // Position to the right of IfElse Node
-                y: newNode.position.y + 100,
+                x: 0, 
+                y: 0,
             },
             selected: false,
             data: { 

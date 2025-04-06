@@ -1,8 +1,7 @@
-// ActionNodeForm.jsx
 import React, { useEffect} from 'react';
 import { useForm } from 'react-hook-form';
 import { RxCross2 } from "react-icons/rx";
-import { FormValues, SelectedNode } from '../types/flowTypes';
+import { FormValues, SelectedNode } from '../../types/flowTypes';
 
 interface ActionNodeFormProps {
   selectedNode: SelectedNode;

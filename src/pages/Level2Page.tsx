@@ -15,7 +15,7 @@ import {
 import '@xyflow/react/dist/style.css';
 import '../styles/xy-theme.css';
 import { useForm } from 'react-hook-form';
-import ActionNodeForm from '../components/ActionNodeForm';
+import ActionNodeForm from '../components/forms/ActionNodeForm';
 import { getLayoutedElements, createNewEdge } from '../utils/flowUtils';
 import { nodeTypes, edgeTypes, initialNodes, initialEdges } from '../constants/flowConstants';
 

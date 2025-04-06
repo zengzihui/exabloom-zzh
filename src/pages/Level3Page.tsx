@@ -15,9 +15,10 @@ import {
 import '@xyflow/react/dist/style.css';
 import '../styles/xy-theme.css';
 import { useForm } from 'react-hook-form';
-import ActionNodeForm from '../components/ActionNodeForm';
+import ActionNodeForm from '../components/forms/ActionNodeForm';
 import { getLayoutedElements, createNewEdge } from '../utils/flowUtils';
 import { nodeTypes, edgeTypes, initialNodes, initialEdges } from '../constants/flowConstants';
+import IfElseNodeForm from '../components/forms/IfElseNodeForm';
 
 
 const Level3Page = () => { 
@@ -28,13 +29,17 @@ const Level3Page = () => {
     const [nodes, setNodes, onNodesChange] = useNodesState(layoutedNodes);
     const [edges, setEdges, onEdgesChange] = useEdgesState(layoutedEdges);
     const [selectedNode, setSelectedNode] = useState(null);
-    const [showForm, setShowForm] = useState(false);
+    const [branchNodes, setBranchNodes] = useState(null);
+    const [elseNode, setElseNode] = useState(null);
+    const [showActionForm, setShowActionForm] = useState(false);
+    const [showIfElseForm, setShowIfElseForm] = useState(false);
+
     
     const { register, handleSubmit, reset } = useForm();
 
   
      
-    const handleActionNodeClick = (event, node) => {
+    const handleNodeClick = (event, node) => {
         // Only show the form if the clicked node is of type 'action'
         if (node.type === 'action') {
             setSelectedNode(node);
@@ -42,9 +47,26 @@ const Level3Page = () => {
             reset({
                 text: node.data.text || ''
             });
-            setShowForm(true);
+            setShowActionForm(true);
+        } else if (node.type === 'ifElse') {
+            const childNodes = getOutgoers(node, nodes, edges);
+            const branchNodes = childNodes.filter((child) => child.type === 'branch');
+            const elseNode = childNodes.find((child) => child.type === 'else');
+            
+            reset({
+                ifElseText: node.data.text || '',
+                branchesTitle: branchNodes.map(branch => ({ id: branch.id, title: branch.data.title })),
+                elseTitle: elseNode?.title || '',
+            });
+
+            setSelectedNode(node);
+            setBranchNodes(branchNodes);
+            setElseNode(elseNode);
+            setShowIfElseForm(true);
+            
         }
     };
+
     const onActionNodeFormSubmit = (data) => {
         // Update the node data
         setNodes(nds => 
@@ -62,8 +84,97 @@ const Level3Page = () => {
           })
         );
         
-        setShowForm(false);
+        setShowActionForm(false);
     };   
+    
+    // Handle IfElseNodeForm submission
+    const onIfElseNodeFormSubmit = (data) => {
+        // Update the IfElseNode text
+        setNodes((nds) => 
+            nds.map((node) => {
+                if (node.id === selectedNode.id) {
+                    return {
+                        ...node,
+                        data: {
+                            ...node.data,
+                            text: data.ifText,
+                        },
+                    };
+                }
+                return node;
+            })
+        );
+
+        // Update branch nodes
+        setNodes((nds) => 
+            nds.map((node) => {
+                const branch = data.branches.find((b) => b.id === node.id);
+                if (branch) {
+                    return {
+                        ...node,
+                        data: {
+                            ...node.data,
+                            title: branch.title,
+                        },
+                    };
+                }
+                return node;
+            })
+        );
+        // Update else node
+        if (elseNode) {
+            setNodes((nds) => 
+                nds.map((node) => {
+                    if (node.id === elseNode.id) {
+                        return {
+                            ...node,
+                            data: {
+                                ...node.data,
+                                title: data.elseTitle,
+                            },
+                        };
+                    }
+                    return node;
+                })
+            );
+        }
+
+        setShowIfElseForm(false);
+    };
+
+    // Handle adding a new branch node
+    const handleAddBranch = () => {
+        const newBranchId = `branch-${Date.now()}`;
+        const newBranchNode = {
+            id: newBranchId,
+            type: 'branch',
+            position: {
+                x: selectedNode.position.x + 200, // Position it near the IfElseNode
+                y: selectedNode.position.y + 100,
+            },
+            data: {
+                title: `New Branch`,
+            },
+        };
+        // Add the new branch node and connect it to the IfElseNode
+        setNodes((nds) => [...nds, newBranchNode]);
+        setEdges((eds) => [
+            ...eds,
+            {
+                id: `e${selectedNode.id}-${newBranchId}`,
+                source: selectedNode.id,
+                target: newBranchId,
+                type: 'smoothstep',
+            },
+        ]);
+
+        // Update the branchNodes state
+        setBranchNodes((branches) => [...branches, newBranchNode]);
+    };
+
+
+
+
 
     const handleActionNodeDelete = useCallback(() => {
         const confirmed = window.confirm("Are you sure you want to delete this node?");
@@ -99,9 +210,63 @@ const Level3Page = () => {
                 return updatedNodes;
             });
 
-            setShowForm(false);
+            setShowActionForm(false);
         }
     }, [selectedNode, edges, setEdges, setNodes]);
+
+    const handleIfElseNodeDelete = useCallback(() => {
+        const confirmed = window.confirm("Are you sure you want to delete this IfElse Node and all its children?");
+        if (confirmed && selectedNode) {
+            // Find all child nodes recursively
+            const findAllChildren = (nodeId) => {
+                const childNodes = getOutgoers({ id: nodeId }, nodes, edges);
+                return childNodes.reduce((acc, child) => {
+                    return [...acc, child, ...findAllChildren(child.id)];
+                }, []);
+            };
+
+            const allChildren = findAllChildren(selectedNode.id);
+
+            // Get all node IDs to delete
+            const nodeIdsToDelete = [selectedNode.id, ...allChildren.map((child) => child.id)];
+
+            // Remove all edges connected to these nodes
+            const filteredEdges = edges.filter(
+                (edge) => !nodeIdsToDelete.includes(edge.source) && !nodeIdsToDelete.includes(edge.target)
+            );
+
+            // Remove all nodes
+            const filteredNodes = nodes.filter((node) => !nodeIdsToDelete.includes(node.id));
+
+            // Find the direct parent of the IfElse Node
+            const parentNodes = getIncomers(selectedNode, nodes, edges);
+            const newEndNodeId = `end-${Date.now()}`;
+            const newEndNode = {
+                id: newEndNodeId,
+                type: 'end',
+                position: {
+                    x: 0,
+                    y: 0, 
+                },
+                data: {
+                    title: 'END',
+                },
+            };
+
+            // Create edges connecting the parent nodes to the new End Node
+            const newEdges = parentNodes.map(parent => ({
+                id: `e${parent.id}-${newEndNodeId}`,
+                source: parent.id,
+                target: newEndNodeId,
+                type: 'addButton',
+            }));
+
+            setEdges([...filteredEdges, ...newEdges]);
+            setNodes([...filteredNodes, newEndNode]);
+
+            setShowIfElseForm(false);
+        }
+    }, [selectedNode, nodes, edges, setEdges, setNodes]);
     
 
     const onConnect = useCallback(
@@ -128,7 +293,7 @@ const Level3Page = () => {
                 onNodesChange={onNodesChange}
                 onEdgesChange={onEdgesChange}
                 onConnect={onConnect}
-                onNodeClick={handleActionNodeClick}
+                onNodeClick={handleNodeClick}
                 deleteKeyCode={[]} // Disable default deletion behaviour
             >
                 <Controls />
@@ -136,12 +301,24 @@ const Level3Page = () => {
                 <Background variant="dots" gap={12} size={1} />
             </ReactFlow>
           
-            {showForm && (
+            {showActionForm && (
                 <ActionNodeForm
                     selectedNode={selectedNode}
-                    onClose={() => setShowForm(false)}
+                    onClose={() => setShowActionForm(false)}
                     onSubmit={onActionNodeFormSubmit}
                     onDelete={handleActionNodeDelete}
+                />
+            )}
+
+            {showIfElseForm && (
+                <IfElseNodeForm
+                    selectedNode={selectedNode}
+                    branchNodes={branchNodes}
+                    elseNode={elseNode}
+                    onClose={() => setShowIfElseForm(false)}
+                    onSubmit={onIfElseNodeFormSubmit}
+                    onAddBranch={handleAddBranch}
+                    onDelete={handleIfElseNodeDelete}
                 />
             )}
     

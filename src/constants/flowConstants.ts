@@ -7,6 +7,7 @@ import { EdgeTypes, NodeTypes } from "@xyflow/react";
 import { Edge } from "@xyflow/react";
 import IfElseNode from "../components/nodes/IfElseNode";
 import BranchNode from "../components/nodes/BranchNode";
+import ElseNode from "../components/nodes/ElseNode";
 
 export const nodeTypes: NodeTypes = {
   start: StartNode,
@@ -14,6 +15,7 @@ export const nodeTypes: NodeTypes = {
   action: ActionNode,
   ifElse: IfElseNode,
   branch: BranchNode,
+  else: ElseNode,
 };
 
 export const edgeTypes: EdgeTypes = {

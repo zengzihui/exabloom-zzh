@@ -26,8 +26,16 @@ export interface FormValues {
 }
 
 export interface SelectedNode {
+    id: string;
     data: {
         text?: string;
         title?: string;
     };
+}
+
+
+export interface IfElseFormValues {
+    ifElseText: string;
+    branchesTitle: { id: string; title: string }[];
+    elseTitle: string;
 }
