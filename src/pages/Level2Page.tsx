@@ -84,99 +84,46 @@ let id: number = 7;
 const getId = () => `${id++}`;
 
 
-   
-const dagreGraph = new dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
- 
-const nodeWidth = 224;
-const nodeHeight = 56;
 
 const getLayoutedElements = (nodes, edges, direction = 'TB') => {
-    // Create a new graph layout
-    dagreGraph.setGraph({ 
-      rankdir: direction,
-      nodesep: 50,    
-      ranksep: 50    
-    });
-    
-    // Group nodes by their parent's x position to maintain vertical columns
-    const nodeColumns = {};
-    const childToParentMap = {};
-    
-    // First, identify parent-child relationships
-    edges.forEach((edge) => {
-      childToParentMap[edge.target] = edge.source;
-    });
-    
-    // Trace from each node up to find its "root parent"
-    const findRootParent = (nodeId) => {
-      let current = nodeId;
-      let parent = childToParentMap[current];
-      
-      // Follow the chain up until we find the topmost parent
-      while (parent) {
-        current = parent;
-        parent = childToParentMap[current];
-      }
-      
-      return current;  
-    };
-    
-    // Group nodes by their root parent to form columns
-    nodes.forEach((node) => {
-      const rootParent = findRootParent(node.id);
-      if (!nodeColumns[rootParent]) {
-        nodeColumns[rootParent] = [];
-      }
-      nodeColumns[rootParent].push(node.id);
-    });
-    
-    // Add nodes to dagre
+    const dagreGraph = new dagre.graphlib.Graph();
+    dagreGraph.setDefaultEdgeLabel(() => ({}));
+    dagreGraph.setGraph({ rankdir: direction, nodesep: 50, ranksep: 50 });
+
+    const nodeWidth = 224;
+    const nodeHeight = 56;
+
+    // Add Nodes and Edges to the dagreGraph
     nodes.forEach((node) => {
       dagreGraph.setNode(node.id, { width: nodeWidth, height: nodeHeight });
     });
     
-    // Add edges to dagre
     edges.forEach((edge) => {
       dagreGraph.setEdge(edge.source, edge.target);
     });
     
-    // Calculate layout with dagre
+    // Calculate layout
     dagre.layout(dagreGraph);
     
-    // Get column x positions from root nodes
-    const columnXPositions = {};
-    Object.keys(nodeColumns).forEach((rootParent) => {
-      const rootNodePosition = dagreGraph.node(rootParent);
-      if (rootNodePosition) {
-        columnXPositions[rootParent] = rootNodePosition.x;
-      }
-    });
-    
-    // Apply the layout with vertical column alignment
+    // Apply layout
     const newNodes = nodes.map((node) => {
       const nodeWithPosition = dagreGraph.node(node.id);
-      if (!nodeWithPosition) return node;
       
-      // Find the column this node belongs to
-      const rootParent = findRootParent(node.id);
-      // Use the column's x position if available, otherwise use dagre's calculation
-      const xPosition = columnXPositions[rootParent] || nodeWithPosition.x;
-      
-      const newNode = {
+      return {
         ...node,
-        targetPosition: 'top',
+        targetPosition:  'top',
         sourcePosition: 'bottom',
         position: {
-          x: xPosition - nodeWidth / 2 + (Math.random() * 0.001),
+          x: nodeWithPosition.x - nodeWidth / 2,
           y: nodeWithPosition.y - nodeHeight / 2,
         },
       };
-      
-      return newNode;
     });
     
     return { nodes: newNodes, edges };
   };
+
+
 
 
 /* WILL CAUSE THE LAYOUT ISSUE*/
@@ -222,8 +169,6 @@ const getLayoutedElements = (nodes, edges, direction = 'TB') => {
 
 const Level2Page = () => {
    
-
-   
     const incrementLayoutVersion = useCallback(() => {
         setLayoutVer((v) => (v + 1) % 10000); // Counter cycles between 0 and 9999
     }, []);
@@ -239,15 +184,6 @@ const Level2Page = () => {
                 incrementLayoutVersion: incrementLayoutVersion,
             },
         },
-        // {
-        //     id: 'e4-5', source: '4', target: '5', type: 'addButton', data: { getId },
-        // },
-        // {
-        //     id: 'e4-6', source: '4', target: '6', type: 'addButton', data: { getId },
-        // },
-        // {
-        //     id: 'e4-2', source: '4', target: '2', type: 'addButton', data: { getId },
-        // },
     ];
     
     
