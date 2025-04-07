@@ -60,3 +60,12 @@ export const getLayoutedElements = (
 
     return { nodes: newNodes, edges };
 };
+
+export const createNewEdge = (source: string, target: string) => {
+    return {
+        id: `${source}-${target}`,
+        source,
+        target,
+        type: 'addButton',
+    };
+};

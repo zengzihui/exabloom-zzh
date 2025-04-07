@@ -15,11 +15,7 @@ CREATE TABLE messages (
     created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW()
 );
 
--- Index to speed up querying most recent message per contact
-CREATE INDEX idx_messages_contact_created_desc
-    ON messages (contact_id, created_at DESC);
-
--- -- Index to help sort messages by timestamp in general
+-- Index to speed up querying most recent message per contact & help sort messages by timestamp in general
 CREATE INDEX idx_messages_created_at_desc
     ON messages (created_at DESC);
 

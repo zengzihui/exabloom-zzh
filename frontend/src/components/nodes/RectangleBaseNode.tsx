@@ -38,10 +38,10 @@ function RectangleBaseNode({
             {Icon && <Icon className={`${colors.text} text-2xl`} />}
         </div>
 
-        <div className="flex-7 flex flex-col justify-center text-left text-xs font-bold">
+        <div className="flex-7 flex flex-col justify-center text-left text-xs font-bold w-full min-w-0">
            
             {data.title && <p className={`${colors.text}`}>{data.title}</p>}
-            {data.text && <p className="">{data.text}</p>}
+            {data.text && <p className="truncate w-full ">{data.text}</p>}
         </div>
 
         <Handle
