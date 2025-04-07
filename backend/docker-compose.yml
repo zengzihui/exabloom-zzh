@@ -1,0 +1,33 @@
+services:
+  db:
+    image: postgres:16
+    container_name: contacts_db
+    environment:
+      POSTGRES_DB: contactsdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./db/init-db:/docker-entrypoint-initdb.d
+      - ./db/message_content_clean.txt:/var/lib/postgresql/message_content_clean.txt:ro
+      - ./db/mock_names.csv:/var/lib/postgresql/mock_names.csv:ro
+    restart: unless-stopped
+
+  api:
+    build:
+      context: ./express
+      dockerfile: Dockerfile
+    container_name: contacts_api
+    environment:
+      DB_HOST: db
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: contactsdb
+      DB_PORT: 5432
+      PORT: 3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    restart: unless-stopped

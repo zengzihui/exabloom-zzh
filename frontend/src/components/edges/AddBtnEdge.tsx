@@ -54,19 +54,35 @@ const handleNodeCreation = (nodeType: string) => {
     console.log("getId() = ", newNodeId);
 
     // Create new node
-    const newNode = {
+    // const newNode = {
+    //     id: newNodeId,
+    //     type: nodeType,
+    //     position: { 
+    //         x: 0,
+    //         y: 0,
+    //     },
+    //     selected: false,
+    //     data: { 
+    //         title: nodeType === 'action' ? "Action Node" : "If Else",
+    //         text: '',
+    //     },
+    // };
+
+    const newNode: Node = {
         id: newNodeId,
         type: nodeType,
-        position: { 
-            x: 0,
-            y: 0,
-        },
+        position: { x: 0, y: 0 },
         selected: false,
-        data: { 
-            title: nodeType === 'action' ? "Action Node" : "If Else",
-            text: '',
+        data: {
+          title: nodeType === 'action' ? "Action Node" : "If Else",
+          text: '',
+          // Initialize optional IfElse-specific properties
+          ...(nodeType === 'ifElse' && { 
+            branchOrder: [] as string[],
+            elseId: '' 
+          })
         },
-    };
+      };
 
     // Additional logic for IfElse Node
     let additionalNodes: Node[] = [];
@@ -74,6 +90,16 @@ const handleNodeCreation = (nodeType: string) => {
     if (nodeType === 'ifElse') {
         // Create Branch Node
         const branchNodeId = getId();
+        const elseNodeId = getId();
+        const endNodeId = getId();
+
+        newNode.data = {
+            ...newNode.data,
+            branchOrder: [branchNodeId],
+            elseId: elseNodeId,
+        };
+    
+
         const branchNode = {
             id: branchNodeId,
             type: 'branch',
@@ -88,7 +114,6 @@ const handleNodeCreation = (nodeType: string) => {
         };
 
         // Create Else Node
-        const elseNodeId = getId();
         const elseNode = {
             id: elseNodeId,
             type: 'else',
@@ -103,7 +128,6 @@ const handleNodeCreation = (nodeType: string) => {
         };
 
         // Create Else Node
-        const endNodeId = getId();
         const endNode = {
             id: endNodeId,
             type: 'end',
@@ -128,19 +152,20 @@ const handleNodeCreation = (nodeType: string) => {
                 type: 'smoothstep',
             },
             {
-                id: `e${newNodeId}-${elseNodeId}`,
-                source: newNodeId,
-                target: elseNodeId,
-                type: 'smoothstep',
-            },
-            {
-                id: `e${branchNodeId}-2}`,
+                id: `e${branchNodeId}-${target}`,
                 source: branchNodeId,
                 target: target,
                 type: 'addButton',
             },
             {
-                id: `e${elseNodeId}-2`,
+                id: `e${newNodeId}-${elseNodeId}`,
+                source: newNodeId,
+                target: elseNodeId,
+                type: 'smoothstep',
+            },
+           
+            {
+                id: `e${elseNodeId}-${endNodeId}`,
                 source: elseNodeId,
                 target: endNodeId,
                 type: 'addButton',

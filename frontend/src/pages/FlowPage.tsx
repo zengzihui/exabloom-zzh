@@ -147,7 +147,21 @@ const FlowPage = () => {
             },
         };
         // Add the new branch node and connect it to the IfElseNode
-        setNodes((nds) => [...nds, newBranchNode]);
+        // setNodes((nds) => [...nds, newBranchNode]);
+        setNodes((nds) => 
+            nds.map(node => {
+                if (node.id === selectedNode.id) {
+                    return {
+                        ...node,
+                        data: {
+                            ...node.data,
+                            branchOrder: [...node.data.branchOrder, newBranchId],
+                        },
+                    };
+                }
+                return node;
+            })
+        );
         setEdges((eds) => [
             ...eds,
             {
