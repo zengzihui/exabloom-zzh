@@ -15,10 +15,9 @@ import {
 import '@xyflow/react/dist/style.css';
 import '../styles/xy-theme.css';
 import ActionNodeForm from '../components/forms/ActionNodeForm';
-import {  createNewEdge, getId, getLayoutedElements } from '../utils/flowUtils';
+import { getId, getLayoutedElements } from '../utils/flowUtils';
 import { nodeTypes, edgeTypes, initialNodes, initialEdges } from '../constants/flowConstants';
 import IfElseNodeForm from '../components/forms/IfElseNodeForm';
-import { useAffectedNode } from '../stores/store';
 
 
 const FlowPage = () => { 
@@ -28,14 +27,11 @@ const FlowPage = () => {
     );
     const [nodes, setNodes, onNodesChange] = useNodesState(layoutedNodes);
     const [edges, setEdges, onEdgesChange] = useEdgesState(layoutedEdges);
-   
-
     const [selectedNode, setSelectedNode] = useState(null);
     const [branchNodes, setBranchNodes] = useState(null);
     const [elseNode, setElseNode] = useState(null);
     const [showActionForm, setShowActionForm] = useState(false);
     const [showIfElseForm, setShowIfElseForm] = useState(false);
-    const { affectedNodeId, setAffectedNodeId } = useAffectedNode();
   
 
     const handleNodeClick = (event, node) => {
@@ -54,21 +50,22 @@ const FlowPage = () => {
         }
     };
 
+    // Handle ActionNodeForm submission
     const onActionNodeFormSubmit = (data) => {
         // Update the node data
         setNodes(nds => 
-          nds.map(node => {
-            if (node.id === selectedNode.id) {
-              return {
-                ...node,
-                data: {
-                  ...node.data,
-                  text: data.text
+            nds.map(node => {
+                if (node.id === selectedNode.id) {
+                    return {
+                        ...node,
+                        data: {
+                        ...node.data,
+                        text: data.text
+                        }
+                    };
                 }
-              };
-            }
-            return node;
-          })
+                    return node;
+            })
         );
         
         setShowActionForm(false);
@@ -132,48 +129,68 @@ const FlowPage = () => {
     // Handle adding a new branch node
     const handleAddBranch = () => {
         const branchCount = branchNodes.length + 1;
-        const newBranchId = getId();
-
+        const newBranchId = getId('branch');
+        const newEndId = getId('end');
       
+        const elseNodeId = selectedNode.data.elseNodeId;
+        const elseNodeIndex = nodes.findIndex(node => node.id === elseNodeId);
+
         const newBranchNode = {
             id: newBranchId,
             type: 'branch',
-            position: {
-                x: 0, // Position it near the IfElseNode
-                y: 0,
-            },
+            position: { x: 0, y: 0, },
             data: {
                 title: `Branch #${branchCount}`,
             },
         };
-        // Add the new branch node and connect it to the IfElseNode
-        // setNodes((nds) => [...nds, newBranchNode]);
-        setNodes((nds) => 
-            nds.map(node => {
-                if (node.id === selectedNode.id) {
-                    return {
-                        ...node,
-                        data: {
-                            ...node.data,
-                            branchOrder: [...node.data.branchOrder, newBranchId],
-                        },
-                    };
-                }
-                return node;
-            })
+
+     
+        const newEndNode = {
+            id: newEndId,
+            type: 'end',
+            position: { x: 0, y: 0 },
+            data: { title: "END" },
+        };
+        
+       
+        // Insert nodes at correct position (just before else node)
+        setNodes((nds) => {
+            const insertIndex = elseNodeIndex !== -1 ? elseNodeIndex : nds.length;
+            return [
+                ...nds.slice(0, insertIndex),
+                newBranchNode,
+                newEndNode,
+                ...nds.slice(insertIndex)
+            ];
+        });
+
+        const elseEdgeIndex = edges.findIndex(edge => 
+            edge.source === selectedNode.id && edge.target === elseNodeId
         );
-        setEdges((eds) => [
-            ...eds,
-            {
-                id: `e${selectedNode.id}-${newBranchId}`,
-                source: selectedNode.id,
-                target: newBranchId,
-                type: 'smoothstep',
-            },
-        ]);
+    
+        setEdges((eds) => {
+            const newEdges = [
+                {
+                    id: `${selectedNode.id}-${newBranchId}`,
+                    source: selectedNode.id,
+                    target: newBranchId,
+                    type: 'smoothstep',
+                },
+                {
+                    id: `${newBranchId}-${newEndId}`,
+                    source: newBranchId,
+                    target: newEndId,
+                    type: 'addButton',
+                }
+            ];
+            const insertPosition = elseEdgeIndex !== -1 ? elseEdgeIndex : eds.length;
+            return [
+                ...eds.slice(0, insertPosition),
+                ...newEdges,
+                ...eds.slice(insertPosition)
+            ];
+        });       
         
-        
-        setAffectedNodeId(selectedNode.id);
         // Update the branchNodes state
         setBranchNodes((branches) => [...branches, newBranchNode]);
     };
@@ -181,7 +198,7 @@ const FlowPage = () => {
 
 
     const handleActionNodeDelete = useCallback(() => {
-        const confirmed = window.confirm("Are you sure you want to delete this node?");
+        const confirmed = window.confirm("Are you sure you want to delete this Action Node?");
 
         if (confirmed && selectedNode) {
            // Get all connected edges
@@ -214,7 +231,7 @@ const FlowPage = () => {
                 return updatedNodes;
             });
 
-            setAffectedNodeId(selectedNode.id);
+            
 
             setShowActionForm(false);
         }
@@ -246,7 +263,7 @@ const FlowPage = () => {
 
             // Find the direct parent of the IfElse Node
             const parentNodes = getIncomers(selectedNode, nodes, edges);
-            const newEndNodeId = `end-${Date.now()}`;
+            const newEndNodeId = getId('end');
             const newEndNode = {
                 id: newEndNodeId,
                 type: 'end',
@@ -261,7 +278,7 @@ const FlowPage = () => {
 
             // Create edges connecting the parent nodes to the new End Node
             const newEdges = parentNodes.map(parent => ({
-                id: `e${parent.id}-${newEndNodeId}`,
+                id: `${parent.id}-${newEndNodeId}`,
                 source: parent.id,
                 target: newEndNodeId,
                 type: 'addButton',
@@ -269,14 +286,8 @@ const FlowPage = () => {
 
             setEdges([...filteredEdges, ...newEdges]);
             setNodes([...filteredNodes, newEndNode]);
-            setAffectedNodeId(selectedNode.id);
 
             setShowIfElseForm(false);
-            // // After deletion, relayout the parent branch if needed
-            // if (parentNodes.length > 0) {
-            //     const parentId = parentNodes[0].id;
-            //     setNodes(prev => getLayoutedBranch(prev, filteredEdges, parentId));
-            // }
         }
     }, [selectedNode, nodes, edges, setEdges, setNodes]);
     
@@ -292,13 +303,11 @@ const FlowPage = () => {
             const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(nodes, edges);
             setNodes([...layoutedNodes]);
             setEdges([...layoutedEdges]);
-            setAffectedNodeId(null);
         
      
-      }, [nodes.length, edges.length]);
+    }, [nodes.length, edges.length]);
   
 
- 
 
     return (
         <div className="w-full h-full">

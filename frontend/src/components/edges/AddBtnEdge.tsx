@@ -9,7 +9,6 @@ import {
     type EdgeProps,
 } from '@xyflow/react';
 import { getId } from '../../utils/flowUtils';
-import { useAffectedNode } from '../../stores/store';
 
 function AddBtnEdge({
     id,
@@ -27,7 +26,6 @@ function AddBtnEdge({
 
 
 const { setEdges, setNodes, getNodes } = useReactFlow();
-const { affectedNodeId, setAffectedNodeId } = useAffectedNode();
 
 const [edgePath, labelX, labelY] = getSmoothStepPath({
     sourceX,
@@ -42,99 +40,72 @@ const [edgePath, labelX, labelY] = getSmoothStepPath({
 const [showSelections, setShowSelections] = useState(false);
 
 const handleNodeCreation = (nodeType: string) => {
+    const nodes = getNodes();
     // Get source and target nodes to determine correct positioning
-    const sourceNode = getNodes().find(n => n.id === source);
-    const targetNode = getNodes().find(n => n.id === target);
+    const sourceNode = nodes.find(n => n.id === source);
+    const targetNode = nodes.find(n => n.id === target);
 
     if (!sourceNode || !targetNode) return;
 
     // Generate a new unique id for the new node
-    const newNodeId: string = getId();
+    const newNodeId: string = getId('action');
 
     console.log("getId() = ", newNodeId);
 
-    // Create new node
-    // const newNode = {
-    //     id: newNodeId,
-    //     type: nodeType,
-    //     position: { 
-    //         x: 0,
-    //         y: 0,
-    //     },
-    //     selected: false,
-    //     data: { 
-    //         title: nodeType === 'action' ? "Action Node" : "If Else",
-    //         text: '',
-    //     },
-    // };
-
-    const newNode: Node = {
+    const newNode = {
         id: newNodeId,
         type: nodeType,
-        position: { x: 0, y: 0 },
+        position: { x: 0, y: 0, },
         selected: false,
-        data: {
-          title: nodeType === 'action' ? "Action Node" : "If Else",
-          text: '',
-          // Initialize optional IfElse-specific properties
-          ...(nodeType === 'ifElse' && { 
-            branchOrder: [] as string[],
-            elseId: '' 
-          })
+        data: { 
+            title: nodeType === 'action' ? "Action Node" : "If Else",
+            text: '',
+            // Conditionally add ifElse-specific properties
+            ...(nodeType === 'ifElse' && {
+                elseNodeId: '',                      
+            })
         },
-      };
+    };
 
     // Additional logic for IfElse Node
     let additionalNodes: Node[] = [];
     let additionalEdges: Edge[] = [];
     if (nodeType === 'ifElse') {
-        // Create Branch Node
-        const branchNodeId = getId();
-        const elseNodeId = getId();
-        const endNodeId = getId();
+       
+        const branchNodeId = getId('branch');
+        const elseNodeId = getId('else');
+        const endNodeId = getId('end');  
 
         newNode.data = {
             ...newNode.data,
-            branchOrder: [branchNodeId],
-            elseId: elseNodeId,
+            elseNodeId: elseNodeId,
+
         };
-    
 
         const branchNode = {
             id: branchNodeId,
             type: 'branch',
-            position: { 
-                x: 0, 
-                y: 0,
-            },
+            position: { x: 0, y: 0, },
             selected: false,
             data: { 
-                title: "Branch #1",
+                title: "Branch #1"
             },
         };
 
-        // Create Else Node
         const elseNode = {
             id: elseNodeId,
             type: 'else',
-            position: { 
-                x: 0,
-                y: 0,
-            },
+            position: { x: 0, y: 0, },
             selected: false,
             data: { 
                 title: "Else",
             },
         };
 
-        // Create Else Node
         const endNode = {
             id: endNodeId,
             type: 'end',
-            position: { 
-                x: 0, 
-                y: 0,
-            },
+            position: { x: 0, y: 0, },
             selected: false,
             data: { 
                 title: "END",
@@ -146,26 +117,26 @@ const handleNodeCreation = (nodeType: string) => {
         // Create edges connecting IfElse Node to Branch and Else Nodes
         additionalEdges = [
             {
-                id: `e${newNodeId}-${branchNodeId}`,
+                id: `${newNodeId}-${branchNodeId}`,
                 source: newNodeId,
                 target: branchNodeId,
                 type: 'smoothstep',
             },
             {
-                id: `e${branchNodeId}-${target}`,
+                id: `${branchNodeId}-${target}`,
                 source: branchNodeId,
                 target: target,
                 type: 'addButton',
             },
             {
-                id: `e${newNodeId}-${elseNodeId}`,
+                id: `${newNodeId}-${elseNodeId}`,
                 source: newNodeId,
                 target: elseNodeId,
                 type: 'smoothstep',
             },
            
             {
-                id: `e${elseNodeId}-${endNodeId}`,
+                id: `${elseNodeId}-${endNodeId}`,
                 source: elseNodeId,
                 target: endNodeId,
                 type: 'addButton',
@@ -175,7 +146,7 @@ const handleNodeCreation = (nodeType: string) => {
     } else if (nodeType === 'action') {
         // Edge to END
         additionalEdges = [{
-            id: `e${newNodeId}-${target}`,
+            id: `${newNodeId}-${target}`,
             source: newNodeId,
             target: target,
             type: 'addButton',
@@ -184,32 +155,49 @@ const handleNodeCreation = (nodeType: string) => {
 
     // Create new edge
     const newEdge1 = {
-        id: `e${source}-${newNodeId}`,
+        id: `${source}-${newNodeId}`,
         source: source,
         target: newNodeId,
         type: 'addButton',
     };
-   
 
-    // Add the new action node
-    setNodes((nds) => {
-        const updatedNodes = nds.concat(newNode, ...additionalNodes);
-        console.log('Updated Nodes: ', updatedNodes);
-        return updatedNodes;
+     // Insert nodes at correct position
+     setNodes((nds) => {
+        // Find the target node index to maintain proper sequence
+        const targetNodeIndex = nds.findIndex(n => n.id === target);
+        const insertIndex = targetNodeIndex !== -1 ? targetNodeIndex : nds.length;
+        
+        const newNodesArray = [
+            ...nds.slice(0, insertIndex + 1),
+            newNode,
+            ...additionalNodes,
+            ...nds.slice(insertIndex + 1)
+        ];
+        console.log('Updated Notes:', newNodesArray);
+        
+        return newNodesArray;
     });
     
-    // Remove the current edge and add the new edges
-    // setEdges((eds) =>
-    //   eds.filter((edge) => edge.id !== id).concat(newEdge1, newEdge2),
-    // );
+    // Insert edges at correct position
     setEdges((eds) => {
-        const updatedEdges = eds.filter((edge) => edge.id !== id).concat(newEdge1, ...additionalEdges);
+        // Find the index of the edge that need to be deleted
+        const edgeIndex = eds.findIndex(edge => edge.id === id);
+        
+        // Filter out the old edge
+        const filteredEdges = eds.filter(edge => edge.id !== id);
+        
+        // Insert new edges at the original edge's position
+        const updatedEdges = [
+            ...filteredEdges.slice(0, edgeIndex),
+            newEdge1,
+            ...additionalEdges,
+            ...filteredEdges.slice(edgeIndex)
+        ];
+        
         console.log('Updated Edges:', updatedEdges);
         return updatedEdges;
+     
     });
-
-    console.log(`newNode id = ${newNodeId} `);
-    setAffectedNodeId(newNodeId);
     setShowSelections(false);
 };
 

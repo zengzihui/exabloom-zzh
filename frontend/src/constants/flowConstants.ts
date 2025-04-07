@@ -24,7 +24,7 @@ export const edgeTypes: EdgeTypes = {
 
 export const initialNodes: FlowNode[] = [
   {
-    id: '1',
+    id: 'a1',
     type: 'start',
     position: { x:0, y:0 },
     selected: false,        
@@ -33,8 +33,56 @@ export const initialNodes: FlowNode[] = [
       text: 'Start',
     },
   },
+  // {
+  //   id: '7',
+  //   type: 'ifElse',
+  //   position: { x:0, y:0 },
+  //   selected: false,
+  //   data: { 
+  //     title: "IfElse" ,
+  //     text: '7'
+  //   },
+  // },
+  // {
+  //   id: '8',
+  //   type: 'branch',
+  //   position: { x:0, y:0 },
+  //   selected: false,
+  //   data: { 
+  //     title: "Branch 8" ,
+  //   },
+  // },
+  
+  // {
+  //   id: '5',
+  //   type: 'action',
+  //   position: { x:0, y:0 },
+  //   selected: false,
+  //   data: { 
+  //     title: "Action" ,
+  //     text: '5'
+  //   },
+  // },
+  // {
+  //   id: '9',
+  //   type: 'else',
+  //   position: { x:0, y:0 },
+  //   selected: false,
+  //   data: { 
+  //     title: "Else 9" ,
+  //   },
+  // },
+  // {
+  //   id: '10',
+  //   type: 'end',
+  //   position: { x:0, y:0 },
+  //   selected: false,
+  //   data: { 
+  //     title: "END 10" 
+  //   },
+  // },
   {
-    id: '2',
+    id: 'a2',
     type: 'end',
     position: { x:0, y:0 },
     selected: false,
@@ -43,38 +91,18 @@ export const initialNodes: FlowNode[] = [
     },
   },
   
-    // {
-    //     id: '4', type: 'action', position: { x:0, y:0 }, selected: false,        
-    //     data: { 
-    //         title: "Node 4",
-    //         text: '',
-    //     },
-    // },
-    // {
-    //     id: '5', type: 'action', position: { x:0, y:0 }, selected: false,        
-    //     data: { 
-    //         title: "Node 5",
-    //         text: '',
-    //     },
-    // },
-    // {
-    //     id: '6', type: 'action', position: { x:0, y:0 }, selected: false,        
-    //     data: { 
-    //         title: "Action Node",
-    //         text: '',
-    //     },
-    // },
+
 ];
 
 export const initialEdges: Edge[] = [
-    {
-        id: 'e1-2', 
-        source: '1', 
-        target: '2', 
-        type: 'addButton', 
-        // data: { 
-        //     getId: getId
-        // },
-    },
+    { id: 'a1-a2', source: 'a1', target: 'a2', type: 'addButton', },
+    
+    // { id: 'e1-7', source: '1', target: '7', type: 'addButton', },
+    // { id: 'e7-9', source: '7', target: '9', type: 'addButton', },
+    // { id: 'e9-10', source: '9', target: '10', type: 'addButton', },
+    // { id: 'e7-8', source: '7', target: '8', type: 'addButton', },
+    // { id: 'e8-5', source: '8', target: '5', type: 'addButton', },
+    // { id: 'e5-2', source: '5', target: '2', type: 'addButton', },
+    
 ];
     
