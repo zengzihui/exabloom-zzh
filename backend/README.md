@@ -1,4 +1,4 @@
-# 1. 🚀 Setup Instructions
+# 1. 🚀 Backend Setup Instructions
 
 1. **Install Docker**
 
